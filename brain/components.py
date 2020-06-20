@@ -46,6 +46,11 @@ class Area(UniquelyIdentifiable):
     def support(self, *, brain: Brain):
         return brain.support[self]
 
+    @bindable_property
+    def active_assembly(self, *, brain: Brain):
+        from assemblies.assembly_fun import Assembly
+        return Assembly.read(self, brain=brain)
+
     def __repr__(self):
         return f"Area(n={self.n}, k={self.k}, beta={self.beta})"
 

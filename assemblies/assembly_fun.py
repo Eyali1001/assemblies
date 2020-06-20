@@ -124,10 +124,8 @@ class Assembly(UniquelyIdentifiable, AssemblyTuple):
 
             # TODO: Eyal see my update to line after merge
             # LINE FOR AFTER MERGE WITH PERFORMANCE
-            brain.connectome.winners[self.area] = neurons
+            brain.connectome.winners[self.area] = list(neurons)
             #print(isinstance(neurons,Area))
-            # CURRENT TEMPORARY BOOTSTRAPPING LINE
-            #brain.connectome._winners[self.area] = set(neurons)
 
             # Replace=True for better performance
             brain.next_round({self.area: [area]}, replace=True, iterations=iterations or brain.repeat)
@@ -183,14 +181,18 @@ class Assembly(UniquelyIdentifiable, AssemblyTuple):
             # create a mapping from the areas to the neurons we want to fire
             area_neuron_mapping = {ass.area: set() for ass in assemblies}
             for ass in assemblies:
-                area_neuron_mapping[ass.area].update(ass.identify(brain=brain))
+                area_neuron_mapping[ass.area].append(list(ass.identify(brain=brain))) #maybe preserve brain?
+
 
             # update winners for relevant areas in the connectome
-            for a in area_neuron_mapping:
-                brain.connectome[a]._winners = area_neuron_mapping[a]
+            for a in area_neuron_mapping.keys():
+                brain.connectome.winners[a] = area_neuron_mapping[a][0]
+
 
             # Replace=True for better performance
-            brain.next_round({a: [area] for a in area_neuron_mapping}, replace=True, iterations=brain.repeat)
+            brain.next_round(subconnectome={a: [area] for a in area_neuron_mapping}, replace=True, iterations=brain.repeat)
+
+            merged_assembly._update_hook(brain=brain)
         merged_assembly.bind_like(*assemblies)
         return merged_assembly
 
